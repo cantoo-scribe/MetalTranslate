@@ -8,18 +8,18 @@ set(EXTERNAL_INSTALL_LOCATION ${CMAKE_BINARY_DIR}/external)
 
 if(APPLE)
     # Set ICU root directory (where Homebrew installed ICU)
-    execute_process(
-        COMMAND brew --prefix icu4c
-        OUTPUT_VARIABLE ICU_ROOT
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
+    # execute_process(
+    #     COMMAND brew --prefix icu4c
+    #     OUTPUT_VARIABLE ICU_ROOT
+    #     OUTPUT_STRIP_TRAILING_WHITESPACE
+    # )
 
     # Manually specify the include and library directories for ICU
-    set(ICU_INCLUDE_DIR ${ICU_ROOT}/include)
-    set(ICU_LIBRARY_DIR ${ICU_ROOT}/lib)
+    # set(ICU_INCLUDE_DIR ${ICU_ROOT}/include)
+    # set(ICU_LIBRARY_DIR ${ICU_ROOT}/lib)
     
     # Find and link ICU
-    include_directories(${ICU_INCLUDE_DIR})
+    # include_directories(${ICU_INCLUDE_DIR})
     find_package(ICU REQUIRED COMPONENTS uc i18n data)
 
     # Execute brew command to get the ONEDNN_ROOT

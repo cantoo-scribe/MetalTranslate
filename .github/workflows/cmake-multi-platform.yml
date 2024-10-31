@@ -72,6 +72,17 @@ jobs:
         if: runner.os == 'macOS'
         run: brew install onednn
 
+      - name: Install ICU on macOS
+        if: runner.os == 'macOS'
+        run: |
+          wget https://github.com/unicode-org/icu/releases/download/release-74-2/icu4c-74_2-src.tgz
+          tar xzfv icu4c-74_2-src.tgz
+          cd icu/source
+          chmod +x runConfigureICU configure install-sh
+          ./runConfigureICU MacOSX
+          make
+          sudo make install
+
       - name: Add Oracular repository
         if: runner.os == 'Linux'
         run: |
@@ -95,10 +106,7 @@ jobs:
       - name: Verify dependencies
         if: runner.os == 'macOS'
         run: |
-          brew list icu4c
           brew list onednn
-          echo "ICU4C include directory: $(brew --prefix icu4c)/include"
-          echo "ICU4C library directory: $(brew --prefix icu4c)/lib"
           echo "oneDNN include directory: $(brew --prefix onednn)/include"
           echo "oneDNN library directory: $(brew --prefix onednn)/lib"
 
@@ -143,14 +151,6 @@ jobs:
       - name: Configure CMake Unix
         if: runner.os != 'Windows'
         run: |
-          if [ "$RUNNER_OS" == "macOS" ]; then
-            export ICU_ROOT=$(brew --prefix icu4c)
-            export CMAKE_PREFIX_PATH=$ICU_ROOT
-            export PKG_CONFIG_PATH=$ICU_ROOT/lib/pkgconfig:$PKG_CONFIG_PATH
-            export LDFLAGS="-L$ICU_ROOT/lib $LDFLAGS"
-            export CPPFLAGS="-I$ICU_ROOT/include $CPPFLAGS"
-            export PATH="$ICU_ROOT/bin:$PATH"
-          fi
           cmake -B ${{ steps.strings.outputs.build-output-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S ${{ github.workspace }}
 
       - name: Configure CMake Windows
@@ -169,14 +169,6 @@ jobs:
         if: runner.os != 'Windows'
         # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
         run: |
-          if [ "$RUNNER_OS" == "macOS" ]; then
-            export ICU_ROOT=$(brew --prefix icu4c)
-            export CMAKE_PREFIX_PATH=$ICU_ROOT
-            export PKG_CONFIG_PATH=$ICU_ROOT/lib/pkgconfig:$PKG_CONFIG_PATH
-            export LDFLAGS="-L$ICU_ROOT/lib $LDFLAGS"
-            export CPPFLAGS="-I$ICU_ROOT/include $CPPFLAGS"
-            export PATH="$ICU_ROOT/bin:$PATH"
-          fi
           cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --parallel 6
 
       - name: Build Windows
@@ -271,55 +263,55 @@ jobs:
             echo "contains_version=false" >> $GITHUB_OUTPUT
           fi
 
-  publish:
-    name: Publish
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    needs:
-      - build
-      - check_version
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Setup node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
-          check-latest: true
+  # publish:
+  #   name: Publish
+  #   runs-on: ubuntu-latest
+  #   if: github.ref == 'refs/heads/main'
+  #   needs:
+  #     - build
+  #     - check_version
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #       with:
+  #         fetch-depth: 0
+  #     - name: Setup node
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: 18
+  #         check-latest: true
 
-      - name: Install dependencies
-        run: |
-          cd nodejs
-          npm ci
+  #     - name: Install dependencies
+  #       run: |
+  #         cd nodejs
+  #         npm ci
 
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-      - name: Check current location
-        run: ls
-      - name: Move Artifacts
-        run: mv ./artifacts ./nodejs/lib
-      - name: Check after move
-        run: ls
+  #     - name: Download all artifacts
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         path: artifacts
+  #     - name: Check current location
+  #       run: ls
+  #     - name: Move Artifacts
+  #       run: mv ./artifacts ./nodejs/lib
+  #     - name: Check after move
+  #       run: ls
 
-      - name: Initialize Git user
-        run: |
-          git config --global user.email "release@cantoo.fr"
-          git config --global user.name "Release Workflow"
-      - name: Initialise the NPM config
-        run: npm config set //registry.npmjs.org/:_authToken $NPM_TOKEN
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - name: Run release
-        run: |
-          cd nodejs
-          if [ "${{ needs.check_version.outputs.contains_version }}" == "true" ]; then
-            npm run release ${{ needs.check_version.outputs.version_number }}
-          else
-            npm run release --ci
-          fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN}}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+  #     - name: Initialize Git user
+  #       run: |
+  #         git config --global user.email "release@cantoo.fr"
+  #         git config --global user.name "Release Workflow"
+  #     - name: Initialise the NPM config
+  #       run: npm config set //registry.npmjs.org/:_authToken $NPM_TOKEN
+  #       env:
+  #         NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+  #     - name: Run release
+  #       run: |
+  #         cd nodejs
+  #         if [ "${{ needs.check_version.outputs.contains_version }}" == "true" ]; then
+  #           npm run release ${{ needs.check_version.outputs.version_number }}
+  #         else
+  #           npm run release --ci
+  #         fi
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN}}
+  #         NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
