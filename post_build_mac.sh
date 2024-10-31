@@ -20,3 +20,5 @@ install_name_tool -change "${ICU_LIBRARY_DIR}/${ICU_UC_LIB_NAME}" @rpath/libicuu
 cp "${ONEDNN_ROOT}/lib/libdnnl.3.dylib" "$1"
 cp "${ICU_LIBRARY_DIR}/libicuuc.dylib" "$1"
 cp "${ICU_LIBRARY_DIR}/libicudata.dylib" "$1"
+
+install_name_tool -change "@loader_path/${ICU_DATA_LIB_NAME}" @loader_path/libicudata.dylib "$1/libicuuc.dylib"
