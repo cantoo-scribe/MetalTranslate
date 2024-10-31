@@ -151,6 +151,14 @@ jobs:
       - name: Configure CMake Unix
         if: runner.os != 'Windows'
         run: |
+          if [ "$RUNNER_OS" == "macOS" ]; then
+            export ICU_ROOT=/usr/local/lib/icu/74.2
+            export CMAKE_PREFIX_PATH=$ICU_ROOT
+            export PKG_CONFIG_PATH=$ICU_ROOT/lib/pkgconfig:$PKG_CONFIG_PATH
+            export LDFLAGS="-L$ICU_ROOT/lib $LDFLAGS"
+            export CPPFLAGS="-I$ICU_ROOT/include $CPPFLAGS"
+            export PATH="$ICU_ROOT/bin:$PATH"
+          fi
           cmake -B ${{ steps.strings.outputs.build-output-dir }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S ${{ github.workspace }}
 
       - name: Configure CMake Windows
@@ -169,6 +177,14 @@ jobs:
         if: runner.os != 'Windows'
         # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
         run: |
+          if [ "$RUNNER_OS" == "macOS" ]; then
+            export ICU_ROOT=/usr/local/lib/icu/74.2
+            export CMAKE_PREFIX_PATH=$ICU_ROOT
+            export PKG_CONFIG_PATH=$ICU_ROOT/lib/pkgconfig:$PKG_CONFIG_PATH
+            export LDFLAGS="-L$ICU_ROOT/lib $LDFLAGS"
+            export CPPFLAGS="-I$ICU_ROOT/include $CPPFLAGS"
+            export PATH="$ICU_ROOT/bin:$PATH"
+          fi
           cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --parallel 6
 
       - name: Build Windows

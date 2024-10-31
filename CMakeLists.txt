@@ -15,11 +15,12 @@ if(APPLE)
     # )
 
     # Manually specify the include and library directories for ICU
-    # set(ICU_INCLUDE_DIR ${ICU_ROOT}/include)
-    # set(ICU_LIBRARY_DIR ${ICU_ROOT}/lib)
+    set(ICU_ROOT /usr/local/lib/icu/74.2)
+    set(ICU_INCLUDE_DIR ${ICU_ROOT}/include)
+    set(ICU_LIBRARY_DIR ${ICU_ROOT}/lib)
     
     # Find and link ICU
-    # include_directories(${ICU_INCLUDE_DIR})
+    include_directories(${ICU_INCLUDE_DIR})
     find_package(ICU REQUIRED COMPONENTS uc i18n data)
 
     # Execute brew command to get the ONEDNN_ROOT
