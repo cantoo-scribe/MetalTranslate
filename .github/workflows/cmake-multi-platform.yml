@@ -206,7 +206,7 @@ jobs:
         run: |
           mkdir -p ${{ steps.strings.outputs.build-output-dir }}/lib
           cp ${{ steps.strings.outputs.build-output-dir }}/libmetaltranslate.dylib ${{ steps.strings.outputs.build-output-dir }}/lib/
-          cp ${{ steps.strings.outputs.build-output-dir }}/libdnnl.3.5.dylib ${{ steps.strings.outputs.build-output-dir }}/lib/libdnnl.3.dylib
+          cp ${{ steps.strings.outputs.build-output-dir }}/libdnnl.3.dylib ${{ steps.strings.outputs.build-output-dir }}/lib/libdnnl.3.dylib
           cp ${{ steps.strings.outputs.build-output-dir }}/libicuuc.dylib ${{ steps.strings.outputs.build-output-dir }}/lib/libicuuc.dylib
           cp ${{ steps.strings.outputs.build-output-dir }}/libicudata.dylib ${{ steps.strings.outputs.build-output-dir }}/lib/libicudata.dylib
           cp ${{ steps.strings.outputs.build-output-dir }}/external/lib/libctranslate2.4.3.1.dylib ${{ steps.strings.outputs.build-output-dir }}/lib/libctranslate2.4.dylib
