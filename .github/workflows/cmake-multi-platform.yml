@@ -2,7 +2,7 @@ name: CMake on multiple platforms
 
 on:
   push:
-    branches: ["main", "async-translate"]
+    branches: ["main"]
   pull_request: null
   workflow_dispatch:
     inputs:
@@ -276,55 +276,55 @@ jobs:
             echo "contains_version=false" >> $GITHUB_OUTPUT
           fi
 
-  # publish:
-  #   name: Publish
-  #   runs-on: ubuntu-latest
-  #   if: github.ref == 'refs/heads/main'
-  #   needs:
-  #     - build
-  #     - check_version
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #       with:
-  #         fetch-depth: 0
-  #     - name: Setup node
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version: 18
-  #         check-latest: true
+  publish:
+    name: Publish
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    needs:
+      - build
+      - check_version
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          check-latest: true
 
-  #     - name: Install dependencies
-  #       run: |
-  #         cd nodejs
-  #         npm ci
+      - name: Install dependencies
+        run: |
+          cd nodejs
+          npm ci
 
-  #     - name: Download all artifacts
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         path: artifacts
-  #     - name: Check current location
-  #       run: ls
-  #     - name: Move Artifacts
-  #       run: mv ./artifacts ./nodejs/lib
-  #     - name: Check after move
-  #       run: ls
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Check current location
+        run: ls
+      - name: Move Artifacts
+        run: mv ./artifacts ./nodejs/lib
+      - name: Check after move
+        run: ls
 
-  #     - name: Initialize Git user
-  #       run: |
-  #         git config --global user.email "release@cantoo.fr"
-  #         git config --global user.name "Release Workflow"
-  #     - name: Initialise the NPM config
-  #       run: npm config set //registry.npmjs.org/:_authToken $NPM_TOKEN
-  #       env:
-  #         NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-  #     - name: Run release
-  #       run: |
-  #         cd nodejs
-  #         if [ "${{ needs.check_version.outputs.contains_version }}" == "true" ]; then
-  #           npm run release ${{ needs.check_version.outputs.version_number }}
-  #         else
-  #           npm run release --ci
-  #         fi
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN}}
-  #         NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Initialize Git user
+        run: |
+          git config --global user.email "release@cantoo.fr"
+          git config --global user.name "Release Workflow"
+      - name: Initialise the NPM config
+        run: npm config set //registry.npmjs.org/:_authToken $NPM_TOKEN
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Run release
+        run: |
+          cd nodejs
+          if [ "${{ needs.check_version.outputs.contains_version }}" == "true" ]; then
+            npm run release ${{ needs.check_version.outputs.version_number }}
+          else
+            npm run release --ci
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN}}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
