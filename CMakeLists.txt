@@ -173,7 +173,7 @@ if(APPLE)
     #     COMMENT "Adjusting LC_LOAD_DYLIB path for libdnnl"
     # )
     add_custom_command(TARGET metaltranslate POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E env EXTERNAL_INSTALL_LOCATION=${EXTERNAL_INSTALL_LOCATION} ONEDNN_ROOT=${ONEDNN_ROOT} ICU_LIBRARY_DIR=${ICU_LIBRARY_DIR} ./post_build_script.sh $<TARGET_FILE_DIR:metaltranslate>
+    COMMAND ${CMAKE_COMMAND} -E env EXTERNAL_INSTALL_LOCATION=${EXTERNAL_INSTALL_LOCATION} ONEDNN_ROOT=${ONEDNN_ROOT} ICU_LIBRARY_DIR=${ICU_LIBRARY_DIR} ./post_build_mac.sh $<TARGET_FILE_DIR:metaltranslate>
     COMMENT "Running post-build script to adjust LC_LOAD_DYLIB paths and copy files"
 )
 elseif(UNIX)
