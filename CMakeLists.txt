@@ -149,29 +149,33 @@ endif()
 # TODO: find a better way to get these libraries version number (they can change between builds)
 if(APPLE)
     # Copy required dylibs to the build directory and adjust LC_LOAD_DYLIB path
+    # add_custom_command(TARGET metaltranslate POST_BUILD
+    #     COMMAND ICU_UC_LIB_NAME=$(otool -L ${EXTERNAL_INSTALL_LOCATION}/lib/libOpenNMTTokenizer.dylib | grep 'libicuuc' | sed -E 's|.*(libicuuc[^ ]*).*|\1|')
+    #     COMMAND ICU_DATA_LIB_NAME=$(otool -L ${EXTERNAL_INSTALL_LOCATION}/lib/libOpenNMTTokenizer.dylib | grep 'libicudata' | sed -E 's|.*(libicudata[^ ]*).*|\1|')
+    #     COMMAND DNNL_LIB_NAME=$(otool -L ${EXTERNAL_INSTALL_LOCATION}/lib/libctranslate2.4.3.1.dylib | grep 'libdnnl' | sed -E 's|.*(libdnnl[^ ]*).*|\1|')
+
+    #     COMMAND echo 'Extracted ICU UC library name: ${ICU_UC_LIB_NAME}'
+    #     COMMAND echo 'Extracted ICU DATA library name: ${ICU_DATA_LIB_NAME}'
+    #     COMMAND echo 'Extracted DNNL library name: ${DNNL_LIB_NAME}'
+
+
+    #     COMMAND install_name_tool -change ${ONEDNN_ROOT}/lib/${DNNL_LIB_NAME} @rpath/libdnnl.3.dylib ${EXTERNAL_INSTALL_LOCATION}/lib/libctranslate2.4.3.1.dylib # change lib path of ctranslate2 lib
+    #     COMMAND install_name_tool -change ${ICU_LIBRARY_DIR}/${ICU_UC_LIB_NAME} @rpath/libicuuc.dylib ${EXTERNAL_INSTALL_LOCATION}/lib/libctranslate2.4.3.1.dylib
+    #     COMMAND install_name_tool -change ${ICU_LIBRARY_DIR}/${ICU_DATA_LIB_NAME} @rpath/libicudata.dylib ${EXTERNAL_INSTALL_LOCATION}/lib/libOpenNMTTokenizer.dylib
+    #     COMMAND install_name_tool -change ${ICU_LIBRARY_DIR}/${ICU_UC_LIB_NAME} @rpath/libicuuc.dylib ${EXTERNAL_INSTALL_LOCATION}/lib/libOpenNMTTokenizer.dylib
+
+    #     # copy files to build directory
+    #     COMMAND ${CMAKE_COMMAND} -E copy ${ONEDNN_ROOT}/lib/libdnnl.3.dylib $<TARGET_FILE_DIR:metaltranslate>
+    #     COMMAND ${CMAKE_COMMAND} -E copy ${ICU_LIBRARY_DIR}/libicuuc.dylib $<TARGET_FILE_DIR:metaltranslate>
+    #     COMMAND ${CMAKE_COMMAND} -E copy ${ICU_LIBRARY_DIR}/libicudata.dylib $<TARGET_FILE_DIR:metaltranslate>
+        
+        
+    #     COMMENT "Adjusting LC_LOAD_DYLIB path for libdnnl"
+    # )
     add_custom_command(TARGET metaltranslate POST_BUILD
-        COMMAND ICU_UC_LIB_NAME=$(otool -L ${EXTERNAL_INSTALL_LOCATION}/lib/libOpenNMTTokenizer.dylib | grep 'libicuuc' | sed -E 's|.*(libicuuc[^ ]*).*|\1|')
-        COMMAND ICU_DATA_LIB_NAME=$(otool -L ${EXTERNAL_INSTALL_LOCATION}/lib/libOpenNMTTokenizer.dylib | grep 'libicudata' | sed -E 's|.*(libicudata[^ ]*).*|\1|')
-        COMMAND DNNL_LIB_NAME=$(otool -L ${EXTERNAL_INSTALL_LOCATION}/lib/libctranslate2.4.3.1.dylib | grep 'libdnnl' | sed -E 's|.*(libdnnl[^ ]*).*|\1|')
-
-        COMMAND echo 'Extracted ICU UC library name: ${ICU_UC_LIB_NAME}'
-        COMMAND echo 'Extracted ICU DATA library name: ${ICU_DATA_LIB_NAME}'
-        COMMAND echo 'Extracted DNNL library name: ${DNNL_LIB_NAME}'
-
-
-        COMMAND install_name_tool -change ${ONEDNN_ROOT}/lib/${DNNL_LIB_NAME} @rpath/libdnnl.3.dylib ${EXTERNAL_INSTALL_LOCATION}/lib/libctranslate2.4.3.1.dylib # change lib path of ctranslate2 lib
-        COMMAND install_name_tool -change ${ICU_LIBRARY_DIR}/${ICU_UC_LIB_NAME} @rpath/libicuuc.dylib ${EXTERNAL_INSTALL_LOCATION}/lib/libctranslate2.4.3.1.dylib
-        COMMAND install_name_tool -change ${ICU_LIBRARY_DIR}/${ICU_DATA_LIB_NAME} @rpath/libicudata.dylib ${EXTERNAL_INSTALL_LOCATION}/lib/libOpenNMTTokenizer.dylib
-        COMMAND install_name_tool -change ${ICU_LIBRARY_DIR}/${ICU_UC_LIB_NAME} @rpath/libicuuc.dylib ${EXTERNAL_INSTALL_LOCATION}/lib/libOpenNMTTokenizer.dylib
-
-        # copy files to build directory
-        COMMAND ${CMAKE_COMMAND} -E copy ${ONEDNN_ROOT}/lib/libdnnl.3.dylib $<TARGET_FILE_DIR:metaltranslate>
-        COMMAND ${CMAKE_COMMAND} -E copy ${ICU_LIBRARY_DIR}/libicuuc.dylib $<TARGET_FILE_DIR:metaltranslate>
-        COMMAND ${CMAKE_COMMAND} -E copy ${ICU_LIBRARY_DIR}/libicudata.dylib $<TARGET_FILE_DIR:metaltranslate>
-        
-        
-        COMMENT "Adjusting LC_LOAD_DYLIB path for libdnnl"
-    )
+    COMMAND ${CMAKE_COMMAND} -E env EXTERNAL_INSTALL_LOCATION=${EXTERNAL_INSTALL_LOCATION} ONEDNN_ROOT=${ONEDNN_ROOT} ICU_LIBRARY_DIR=${ICU_LIBRARY_DIR} ./post_build_script.sh $<TARGET_FILE_DIR:metaltranslate>
+    COMMENT "Running post-build script to adjust LC_LOAD_DYLIB paths and copy files"
+)
 elseif(UNIX)
     add_custom_command(TARGET metaltranslate POST_BUILD
 
