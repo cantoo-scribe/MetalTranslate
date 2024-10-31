@@ -154,15 +154,27 @@ if(APPLE)
         OUTPUT_STRIP_TRAILING_WHITESPACE
     )
 
+    message(STATUS "Extracted ICU UC library name: ${ICU_UC_LIB_NAME}")
+
     execute_process(
         COMMAND otool -L ${EXTERNAL_INSTALL_LOCATION}/lib/libOpenNMTTokenizer.dylib | grep "libicudata" | sed -E "s|.*(libicudata[^ ]*).*|\\1|"
         OUTPUT_VARIABLE ICU_DATA_LIB_NAME
         OUTPUT_STRIP_TRAILING_WHITESPACE
     )
 
+    message(STATUS "Extracted ICU DATA library name: ${ICU_DATA_LIB_NAME}")
+
+    execute_process(
+        COMMAND otool -L ${EXTERNAL_INSTALL_LOCATION}/lib/libctranslate2.4.3.1.dylib | grep "libicudata" | sed -E "s|.*(libdnnl[^ ]*).*|\\1|"
+        OUTPUT_VARIABLE DNNL_LIB_NAME
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+
+    message(STATUS "Extracted DNNL library name: ${DNNL_LIB_NAME}")
+
     # Copy required dylibs to the build directory and adjust LC_LOAD_DYLIB path
     add_custom_command(TARGET metaltranslate POST_BUILD
-        COMMAND install_name_tool -change ${ONEDNN_ROOT}/lib/libdnnl.3.dylib @rpath/libdnnl.3.dylib ${EXTERNAL_INSTALL_LOCATION}/lib/libctranslate2.4.3.1.dylib # change lib path of ctranslate2 lib
+        COMMAND install_name_tool -change ${ONEDNN_ROOT}/lib/${DNNL_LIB_NAME} @rpath/libdnnl.3.dylib ${EXTERNAL_INSTALL_LOCATION}/lib/libctranslate2.4.3.1.dylib # change lib path of ctranslate2 lib
         COMMAND install_name_tool -change ${ICU_LIBRARY_DIR}/${ICU_UC_LIB_NAME} @rpath/libicuuc.dylib ${EXTERNAL_INSTALL_LOCATION}/lib/libctranslate2.4.3.1.dylib
         COMMAND install_name_tool -change ${ICU_LIBRARY_DIR}/${ICU_DATA_LIB_NAME} @rpath/libicudata.dylib ${EXTERNAL_INSTALL_LOCATION}/lib/libOpenNMTTokenizer.dylib
         COMMAND install_name_tool -change ${ICU_LIBRARY_DIR}/${ICU_UC_LIB_NAME} @rpath/libicuuc.dylib ${EXTERNAL_INSTALL_LOCATION}/lib/libOpenNMTTokenizer.dylib
