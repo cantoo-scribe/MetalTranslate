@@ -180,6 +180,7 @@ jobs:
             export LDFLAGS="-L$ICU_ROOT/lib $LDFLAGS"
             export CPPFLAGS="-I$ICU_ROOT/include $CPPFLAGS"
             export PATH="$ICU_ROOT/bin:$PATH"
+            chmod +x post_build_mac.sh
           fi
           cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --parallel 6
 
