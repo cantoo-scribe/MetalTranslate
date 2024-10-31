@@ -31,7 +31,7 @@ jobs:
       #
       # To add more build types (Release, Debug, RelWithDebInfo, etc.) customize the build_type list.
       matrix:
-        os: [macos-13] #[macos-13, ubuntu-latest, windows-latest]
+        os: [macos-13, ubuntu-latest, windows-latest]
         build_type: [Release]
         c_compiler: [gcc]
         include:
@@ -74,14 +74,7 @@ jobs:
 
       - name: Install ICU on macOS
         if: runner.os == 'macOS'
-        run: |
-          wget https://github.com/unicode-org/icu/releases/download/release-74-2/icu4c-74_2-src.tgz
-          tar xzfv icu4c-74_2-src.tgz
-          cd icu/source
-          chmod +x runConfigureICU configure install-sh
-          ./runConfigureICU MacOSX
-          make
-          sudo make install
+        run: brew install icu4c
 
       - name: Add Oracular repository
         if: runner.os == 'Linux'
@@ -106,7 +99,10 @@ jobs:
       - name: Verify dependencies
         if: runner.os == 'macOS'
         run: |
+          brew list icu4c
           brew list onednn
+          echo "ICU4C include directory: $(brew --prefix icu4c)/include"
+          echo "ICU4C library directory: $(brew --prefix icu4c)/lib"
           echo "oneDNN include directory: $(brew --prefix onednn)/include"
           echo "oneDNN library directory: $(brew --prefix onednn)/lib"
 
@@ -152,7 +148,7 @@ jobs:
         if: runner.os != 'Windows'
         run: |
           if [ "$RUNNER_OS" == "macOS" ]; then
-            export ICU_ROOT=/usr/local/lib/icu/74.2
+            export ICU_ROOT=$(brew --prefix icu4c)
             export CMAKE_PREFIX_PATH=$ICU_ROOT
             export PKG_CONFIG_PATH=$ICU_ROOT/lib/pkgconfig:$PKG_CONFIG_PATH
             export LDFLAGS="-L$ICU_ROOT/lib $LDFLAGS"
@@ -178,7 +174,7 @@ jobs:
         # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
         run: |
           if [ "$RUNNER_OS" == "macOS" ]; then
-            export ICU_ROOT=/usr/local/lib/icu/74.2
+            export ICU_ROOT=$(brew --prefix icu4c)
             export CMAKE_PREFIX_PATH=$ICU_ROOT
             export PKG_CONFIG_PATH=$ICU_ROOT/lib/pkgconfig:$PKG_CONFIG_PATH
             export LDFLAGS="-L$ICU_ROOT/lib $LDFLAGS"
