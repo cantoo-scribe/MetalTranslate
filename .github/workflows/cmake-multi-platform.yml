@@ -2,7 +2,7 @@ name: CMake on multiple platforms
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "async-translate"]
   pull_request: null
   workflow_dispatch:
     inputs:
@@ -31,7 +31,7 @@ jobs:
       #
       # To add more build types (Release, Debug, RelWithDebInfo, etc.) customize the build_type list.
       matrix:
-        os: [macos-13, ubuntu-latest, windows-latest]
+        os: [macos-13] #[macos-13, ubuntu-latest, windows-latest]
         build_type: [Release]
         c_compiler: [gcc]
         include:
@@ -203,8 +203,8 @@ jobs:
           mkdir -p ${{ steps.strings.outputs.build-output-dir }}/lib
           cp ${{ steps.strings.outputs.build-output-dir }}/libmetaltranslate.dylib ${{ steps.strings.outputs.build-output-dir }}/lib/
           cp ${{ steps.strings.outputs.build-output-dir }}/libdnnl.3.5.dylib ${{ steps.strings.outputs.build-output-dir }}/lib/libdnnl.3.dylib
-          cp ${{ steps.strings.outputs.build-output-dir }}/libicuuc.74.2.dylib ${{ steps.strings.outputs.build-output-dir }}/lib/libicuuc.74.dylib
-          cp ${{ steps.strings.outputs.build-output-dir }}/libicudata.74.2.dylib ${{ steps.strings.outputs.build-output-dir }}/lib/libicudata.74.dylib
+          cp ${{ steps.strings.outputs.build-output-dir }}/libicuuc.dylib ${{ steps.strings.outputs.build-output-dir }}/lib/libicuuc.dylib
+          cp ${{ steps.strings.outputs.build-output-dir }}/libicudata.dylib ${{ steps.strings.outputs.build-output-dir }}/lib/libicudata.dylib
           cp ${{ steps.strings.outputs.build-output-dir }}/external/lib/libctranslate2.4.3.1.dylib ${{ steps.strings.outputs.build-output-dir }}/lib/libctranslate2.4.dylib
           cp ${{ steps.strings.outputs.build-output-dir }}/external/lib/libOpenNMTTokenizer.dylib ${{ steps.strings.outputs.build-output-dir }}/lib/
           cd ${{ steps.strings.outputs.build-output-dir }}
@@ -230,7 +230,6 @@ jobs:
           Copy-Item -Path "c:\icu\bin64\icuuc74.dll" -Destination "${{ steps.strings.outputs.build-output-dir }}\lib\" -Force
           Copy-Item -Path "c:\Program Files (x86)\oneDNN\bin\dnnl.dll" -Destination "${{ steps.strings.outputs.build-output-dir }}\lib\" -Force
 
-
       - name: Upload ZIP artifact for macOS
         if: runner.os == 'macOS'
         uses: actions/upload-artifact@v4
@@ -251,7 +250,6 @@ jobs:
         with:
           name: win32-x64
           path: ${{ steps.strings.outputs.build-output-dir }}\lib\*.dll
-
 
   check_version:
     name: Commit check
@@ -276,7 +274,8 @@ jobs:
   publish:
     name: Publish
     runs-on: ubuntu-latest
-    needs: 
+    if: github.ref == 'refs/heads/main'
+    needs:
       - build
       - check_version
     steps:
@@ -288,12 +287,12 @@ jobs:
         with:
           node-version: 18
           check-latest: true
-      
+
       - name: Install dependencies
         run: |
           cd nodejs
           npm ci
-      
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
@@ -304,7 +303,7 @@ jobs:
         run: mv ./artifacts ./nodejs/lib
       - name: Check after move
         run: ls
-      
+
       - name: Initialize Git user
         run: |
           git config --global user.email "release@cantoo.fr"
