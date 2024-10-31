@@ -5,7 +5,7 @@
  * @module metal-translator
  */
 
-const {  DataType, open, define } = require("ffi-rs");
+const { DataType, open, define, load } = require("ffi-rs");
 const { platform: platformOS } = require("os");
 const path = require("path");
 
@@ -28,8 +28,6 @@ switch (platform) {
     console.error('OS Not supported')
     process.exit(1)
 }
-
-console.log("dynamiclib: ", dynamicLib);
 
 open({
   library: "metalTranslate",
@@ -85,16 +83,28 @@ class Translator {
    * @param {string} text
    * @param {string} sourceCode
    * @param {string} targetCode
+   * @returns {Promise<string>}
    */
-  translate(text, sourceCode, targetCode) {
-    const result = metal.translate([
-      this.translator,
-      text,
-      sourceCode,
-      targetCode,
-    ]);
-
-    return result;
+  async translate(text, sourceCode, targetCode) {
+    return load({
+      library: "metalTranslate",
+      funcName: "translate",
+      retType: DataType.String,
+      paramsType: [
+        DataType.External,
+        DataType.String,
+        DataType.String,
+        DataType.String,
+      ],
+      paramsValue:
+        [
+          this.translator,
+          text,
+          sourceCode,
+          targetCode,
+        ],
+      runInNewThread: true
+    })
   }
 
   free() {
