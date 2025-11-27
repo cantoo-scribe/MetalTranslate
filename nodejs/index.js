@@ -19,7 +19,7 @@ switch (platform) {
     dynamicLib = path.join(libPath, 'linux-x64', './libmetaltranslate.so')
     break
   case 'darwin':
-    dynamicLib = path.join(libPath, 'darwin-x64', './libmetaltranslate.dylib') // Ensure to use npm_config_arch=x64 yarn packages:reinstall to run in dev mode
+    dynamicLib = path.join(libPath, `darwin-${process.arch}`, './libmetaltranslate.dylib')
     break
   case 'win32':
     dynamicLib = path.join(libPath, 'win32-x64', 'metaltranslate.dll')

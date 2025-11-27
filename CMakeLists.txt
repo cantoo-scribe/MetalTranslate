@@ -9,7 +9,7 @@ set(EXTERNAL_INSTALL_LOCATION ${CMAKE_BINARY_DIR}/external)
 if(APPLE)
     # Set ICU root directory (where Homebrew installed ICU)
     execute_process(
-        COMMAND brew --prefix icu4c
+        COMMAND brew --prefix icu4c@74
         OUTPUT_VARIABLE ICU_ROOT
         OUTPUT_STRIP_TRAILING_WHITESPACE
     )
@@ -17,7 +17,7 @@ if(APPLE)
     # Manually specify the include and library directories for ICU
     set(ICU_INCLUDE_DIR ${ICU_ROOT}/include)
     set(ICU_LIBRARY_DIR ${ICU_ROOT}/lib)
-    
+
     # Find and link ICU
     include_directories(${ICU_INCLUDE_DIR})
     find_package(ICU REQUIRED COMPONENTS uc i18n data)
@@ -77,6 +77,7 @@ if(UNIX)
         GIT_TAG v1.37.1
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${EXTERNAL_INSTALL_LOCATION}
         -DCMAKE_CXX_FLAGS="-Wno-enum-constexpr-conversion"
+        -DCMAKE_POLICY_VERSION_MINIMUM=3.5
         CXX_STANDARD 11
     )
 else()
@@ -150,9 +151,9 @@ endif()
 
 if(APPLE)
     add_custom_command(TARGET metaltranslate POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E env EXTERNAL_INSTALL_LOCATION=${EXTERNAL_INSTALL_LOCATION} ONEDNN_ROOT=${ONEDNN_ROOT} ICU_LIBRARY_DIR=${ICU_LIBRARY_DIR} ${CMAKE_CURRENT_LIST_DIR}/post_build_mac.sh $<TARGET_FILE_DIR:metaltranslate>
-    COMMENT "Running post-build script to adjust LC_LOAD_DYLIB paths and copy files"
-)
+        COMMAND ${CMAKE_COMMAND} -E env EXTERNAL_INSTALL_LOCATION=${EXTERNAL_INSTALL_LOCATION} ONEDNN_ROOT=${ONEDNN_ROOT} ICU_LIBRARY_DIR=${ICU_LIBRARY_DIR} ${CMAKE_CURRENT_LIST_DIR}/post_build_mac.sh $<TARGET_FILE_DIR:metaltranslate>
+        COMMENT "Running post-build script to adjust LC_LOAD_DYLIB paths and copy files"
+    )
 elseif(UNIX)
     add_custom_command(TARGET metaltranslate POST_BUILD
 
