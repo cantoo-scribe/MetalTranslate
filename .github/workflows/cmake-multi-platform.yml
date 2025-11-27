@@ -31,7 +31,7 @@ jobs:
       #
       # To add more build types (Release, Debug, RelWithDebInfo, etc.) customize the build_type list.
       matrix:
-        os: [macos-15-intel, macos-15, ubuntu-22.04, windows-latest]
+        os: [macos-15-intel, macos-15, ubuntu-24.04, windows-latest]
         build_type: [Release]
         c_compiler: [gcc]
         include:
@@ -46,7 +46,7 @@ jobs:
           - os: macos-15
             c_compiler: gcc
             cpp_compiler: g++
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             c_compiler: gcc
             cpp_compiler: g++
         exclude:
@@ -54,7 +54,7 @@ jobs:
             c_compiler: gcc
           - os: windows-latest
             c_compiler: clang
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             c_compiler: cl
 
     steps:
@@ -79,25 +79,26 @@ jobs:
         if: runner.os == 'macOS'
         run: brew install --force icu4c@74
 
-      - name: Add Oracular repository
+      - name: Add Noble repository
         if: runner.os == 'Linux'
         run: |
-          echo "deb http://archive.ubuntu.com/ubuntu oracular main restricted universe multiverse" | sudo tee /etc/apt/sources.list.d/oracular.list
+          echo "deb http://archive.ubuntu.com/ubuntu noble main restricted universe multiverse" | sudo tee /etc/apt/sources.list.d/noble.list
+          echo "deb http://archive.ubuntu.com/ubuntu noble-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/noble.list
 
       - name: Update package lists
         if: runner.os == 'Linux'
         run: sudo apt update
 
-      - name: Install libdnnl-dev from oracular
+      - name: Install libdnnl-dev from noble
         if: runner.os == 'Linux'
-        run: sudo apt install -t oracular -y libdnnl-dev
+        run: sudo apt install -t noble -y libdnnl-dev
 
       - name: Pin libdnnl-dev
         if: runner.os == 'Linux'
         run: |
-          echo "Package: libdnnl-dev" | sudo tee /etc/apt/preferences.d/pin-oracular-package
-          echo "Pin: release n=oracular" | sudo tee -a /etc/apt/preferences.d/pin-oracular-package
-          echo "Pin-Priority: 1001" | sudo tee -a /etc/apt/preferences.d/pin-oracular-package
+          echo "Package: libdnnl-dev" | sudo tee /etc/apt/preferences.d/pin-noble-libdnnl
+          echo "Pin: release n=noble" | sudo tee -a /etc/apt/preferences.d/pin-noble-libdnnl
+          echo "Pin-Priority: 1001" | sudo tee -a /etc/apt/preferences.d/pin-noble-libdnnl
 
       - name: Verify dependencies
         if: runner.os == 'macOS'
@@ -268,7 +269,7 @@ jobs:
 
   check_version:
     name: Commit check
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     outputs:
       contains_version: ${{ steps.check_message.outputs.contains_version }}
       version_number: ${{ steps.check_message.outputs.version_number }}
@@ -288,7 +289,7 @@ jobs:
 
   publish:
     name: Publish
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     if: github.ref == 'refs/heads/main'
     needs:
       - build
@@ -322,7 +323,7 @@ jobs:
       - name: Check after move
         run: |
           ls
-          ls ./artifacts
+          ls ./nodejs/lib
 
       - name: Initialize Git user
         run: |
